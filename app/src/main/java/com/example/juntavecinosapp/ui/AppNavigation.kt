@@ -12,10 +12,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
-/**
- * Nombres de las rutas de navegación de la app.
- * Se usan siempre desde aquí para no escribir textos sueltos en las pantallas.
- */
+// Nombres de las rutas de navegación de la app.
+//Se usan siempre desde aquí para no escribir textos sueltos en las pantallas.
+
 object Rutas {
     // Isa: arriendos y acceso
     const val LOGIN = "login"
@@ -24,7 +23,7 @@ object Rutas {
     const val DISPONIBILIDAD = "disponibilidad"
     const val DETALLE_ARRIENDO = "detalle_arriendo"
 
-    // Andy: finanzas
+    // Andy- finanzas
     const val REGISTRAR_PAGO = "registrar_pago"
     const val REGISTRAR_GASTO = "registrar_gasto"
     const val HISTORIAL = "historial"

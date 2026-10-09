@@ -10,7 +10,7 @@ object RolUsuario {
     const val TESORERIA = "TESORERIA"
 }
 
-/** Tabla "usuarios". Todos los datos son ficticios, como exige el caso. */
+//Tabla "usuarios" - Todos los datos son ficticios, como exige el caso.
 @Entity(tableName = "usuarios")
 data class Usuario(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

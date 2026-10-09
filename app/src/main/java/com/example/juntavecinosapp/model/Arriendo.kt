@@ -12,7 +12,7 @@ object EstadoArriendo {
     const val RECHAZADO = "RECHAZADO"
 }
 
-/** Tabla "arriendos": una solicitud de uso de una dependencia de la sede. */
+//Tabla "arriendos"- solicitud de uso de una dependencia de la sede.
 @Entity(tableName = "arriendos")
 data class Arriendo(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
