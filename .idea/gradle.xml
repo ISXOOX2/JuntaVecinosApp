@@ -7,5 +7,6 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
       </GradleProjectSettings>
     </option>
+    <option name="offlineMode" value="true" />
   </component>
 </project>
