@@ -1,9 +1,12 @@
 package com.example.juntavecinosapp.ui
 
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,12 +33,12 @@ import com.example.juntavecinosapp.ui.screens.LoginScreen
 import com.example.juntavecinosapp.viewmodel.AuthViewModel
 import com.example.juntavecinosapp.viewmodel.AuthViewModelFactory
 import com.example.juntavecinosapp.ui.screens.HomeScreen
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import com.example.juntavecinosapp.data.repository.ArriendoRepository
 import com.example.juntavecinosapp.ui.screens.SolicitarArriendoScreen
 import com.example.juntavecinosapp.viewmodel.ArriendoViewModel
 import com.example.juntavecinosapp.viewmodel.ArriendoViewModelFactory
+import com.example.juntavecinosapp.model.RolUsuario
+import com.example.juntavecinosapp.ui.screens.DisponibilidadScreen
 
 // Nombres de las rutas de navegación de la app.
 //Se usan siempre desde aquí para no escribir textos sueltos en las pantallas.
@@ -46,7 +49,8 @@ object Rutas {
     const val HOME = "home"
     const val SOLICITAR_ARRIENDO = "solicitar_arriendo"
     const val DISPONIBILIDAD = "disponibilidad"
-    const val DETALLE_ARRIENDO = "detalle_arriendo"
+    const val DETALLE_ARRIENDO = "detalle_arriendo/{arriendoId}"
+    fun detalleArriendo(id: Int) = "detalle_arriendo/$id"
 
     // Andy- finanzas
     const val REGISTRAR_PAGO = "registrar_pago"
@@ -118,7 +122,15 @@ fun AppNavigation(
                 onVolver = { navController.popBackStack() }
             )
         }
-        composable(Rutas.DISPONIBILIDAD) { PantallaProvisoria("Disponibilidad") }
+        composable(Rutas.DISPONIBILIDAD) {
+            DisponibilidadScreen(
+                viewModel = arriendoViewModel,
+                usuarioId = usuarioActual?.id ?: 0,
+                rol = usuarioActual?.rol ?: RolUsuario.VECINO,
+                onVerDetalle = { id -> navController.navigate(Rutas.detalleArriendo(id)) },
+                onVolver = { navController.popBackStack() }
+            )
+        }
         composable(Rutas.DETALLE_ARRIENDO) { PantallaProvisoria("Detalle de arriendo") }
 
 
