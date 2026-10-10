@@ -25,6 +25,10 @@ import com.example.juntavecinosapp.viewmodel.MovimientoViewModel
 import com.example.juntavecinosapp.viewmodel.MovimientoViewModelFactory
 import com.example.juntavecinosapp.viewmodel.ReporteViewModel
 import com.example.juntavecinosapp.viewmodel.ReporteViewModelFactory
+import com.example.juntavecinosapp.data.repository.UsuarioRepository
+import com.example.juntavecinosapp.ui.screens.LoginScreen
+import com.example.juntavecinosapp.viewmodel.AuthViewModel
+import com.example.juntavecinosapp.viewmodel.AuthViewModelFactory
 
 // Nombres de las rutas de navegación de la app.
 //Se usan siempre desde aquí para no escribir textos sueltos en las pantallas.
@@ -60,13 +64,28 @@ fun AppNavigation(
     val reporteViewModel: ReporteViewModel = viewModel(
         factory = ReporteViewModelFactory(repositorioMovimientos)
     )
+    val authViewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(
+            UsuarioRepository(AppDatabase.obtener(context).usuarioDao())
+        )
+    )
 
     NavHost(
         navController = navController,
         startDestination = Rutas.LOGIN
     ) {
         // Isa
-        composable(Rutas.LOGIN) { PantallaProvisoria("Login / Registro") }
+        composable(Rutas.LOGIN) {
+            LoginScreen(
+                viewModel = authViewModel,
+                onAccesoExitoso = {
+                    // al entrar se borra el login del historial para que "atrás" no vuelva a él
+                    navController.navigate(Rutas.HOME) {
+                        popUpTo(Rutas.LOGIN) { inclusive = true }
+                    }
+                }
+            )
+        }
         composable(Rutas.HOME) { PantallaProvisoria("Home") }
         composable(Rutas.SOLICITAR_ARRIENDO) { PantallaProvisoria("Solicitar arriendo") }
         composable(Rutas.DISPONIBILIDAD) { PantallaProvisoria("Disponibilidad") }
