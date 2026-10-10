@@ -7,10 +7,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext                       // NUEVO
+import androidx.lifecycle.viewmodel.compose.viewModel                  // NUEVO
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.juntavecinosapp.data.local.AppDatabase              // NUEVO
+import com.example.juntavecinosapp.data.repository.MovimientoRepository // NUEVO
+import com.example.juntavecinosapp.ui.screens.RegistrarGastoScreen     // NUEVO
+import com.example.juntavecinosapp.ui.screens.RegistrarPagoScreen      // NUEVO
+import com.example.juntavecinosapp.viewmodel.MovimientoViewModel       // NUEVO
+import com.example.juntavecinosapp.viewmodel.MovimientoViewModelFactory // NUEVO
 
 // Nombres de las rutas de navegación de la app.
 //Se usan siempre desde aquí para no escribir textos sueltos en las pantallas.
@@ -35,10 +43,17 @@ object Rutas {
 fun AppNavigation(
     navController: NavHostController = rememberNavController()
 ) {
+    // NUEVO: un solo ViewModel de finanzas, compartido por todas las pantallas de Andy
+    val context = LocalContext.current
+    val movimientoViewModel: MovimientoViewModel = viewModel(
+        factory = MovimientoViewModelFactory(
+            MovimientoRepository(AppDatabase.obtener(context).movimientoDao())
+        )
+    )
 
     NavHost(
         navController = navController,
-        startDestination = Rutas.LOGIN
+        startDestination = Rutas.LOGIN      // <- AQUÍ se cambia la pantalla de inicio (ver abajo)
     ) {
         // Isa
         composable(Rutas.LOGIN) { PantallaProvisoria("Login / Registro") }
@@ -48,8 +63,18 @@ fun AppNavigation(
         composable(Rutas.DETALLE_ARRIENDO) { PantallaProvisoria("Detalle de arriendo") }
 
         // Andy
-        composable(Rutas.REGISTRAR_PAGO) { PantallaProvisoria("Registrar pago") }
-        composable(Rutas.REGISTRAR_GASTO) { PantallaProvisoria("Registrar gasto") }
+        composable(Rutas.REGISTRAR_PAGO) {                                  // NUEVO
+            RegistrarPagoScreen(
+                viewModel = movimientoViewModel,
+                onVolver = { navController.popBackStack() }
+            )
+        }
+        composable(Rutas.REGISTRAR_GASTO) {                                 // NUEVO
+            RegistrarGastoScreen(
+                viewModel = movimientoViewModel,
+                onVolver = { navController.popBackStack() }
+            )
+        }
         composable(Rutas.HISTORIAL) { PantallaProvisoria("Historial de movimientos") }
         composable(Rutas.TRANSPARENCIA) { PantallaProvisoria("Transparencia") }
         composable(Rutas.REPORTE) { PantallaProvisoria("Reporte") }
@@ -64,5 +89,4 @@ private fun PantallaProvisoria(titulo: String) {
     ) {
         Text(text = titulo, style = MaterialTheme.typography.headlineMedium)
     }
-
 }
