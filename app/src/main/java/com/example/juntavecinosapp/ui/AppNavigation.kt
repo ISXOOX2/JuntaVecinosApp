@@ -35,6 +35,7 @@ object Rutas {
 fun AppNavigation(
     navController: NavHostController = rememberNavController()
 ) {
+
     NavHost(
         navController = navController,
         startDestination = Rutas.LOGIN
@@ -63,4 +64,5 @@ private fun PantallaProvisoria(titulo: String) {
     ) {
         Text(text = titulo, style = MaterialTheme.typography.headlineMedium)
     }
+
 }

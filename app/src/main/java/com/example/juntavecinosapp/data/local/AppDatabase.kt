@@ -7,14 +7,15 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.juntavecinosapp.model.Arriendo
 import com.example.juntavecinosapp.model.Usuario
+import com.example.juntavecinosapp.model.Movimiento
 
 //Base de datos local de la app (Room / SQLite).
 //Cada entidad de la lista es una tabla. Si se agrega una entidad nueva
 //(ej Movimiento), hay que sumarla aquí y subir el número de versión.
 
 @Database(
-    entities = [Usuario::class, Arriendo::class],
-    version = 1,
+    entities = [Usuario::class, Arriendo::class, Movimiento::class],  // 2. suma Movimiento
+    version = 2,                                                       // 3. sube de 1 a 2
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -22,6 +23,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun usuarioDao(): UsuarioDao
     abstract fun arriendoDao(): ArriendoDao
+    abstract fun movimientoDao(): MovimientoDao
 
     companion object {
         @Volatile
