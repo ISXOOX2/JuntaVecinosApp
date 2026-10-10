@@ -39,6 +39,9 @@ import com.example.juntavecinosapp.viewmodel.ArriendoViewModel
 import com.example.juntavecinosapp.viewmodel.ArriendoViewModelFactory
 import com.example.juntavecinosapp.model.RolUsuario
 import com.example.juntavecinosapp.ui.screens.DisponibilidadScreen
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.example.juntavecinosapp.ui.screens.DetalleArriendoScreen
 
 // Nombres de las rutas de navegación de la app.
 //Se usan siempre desde aquí para no escribir textos sueltos en las pantallas.
@@ -131,7 +134,17 @@ fun AppNavigation(
                 onVolver = { navController.popBackStack() }
             )
         }
-        composable(Rutas.DETALLE_ARRIENDO) { PantallaProvisoria("Detalle de arriendo") }
+        composable(
+            route = Rutas.DETALLE_ARRIENDO,
+            arguments = listOf(navArgument("arriendoId") { type = NavType.IntType })
+        ) { entrada ->
+            DetalleArriendoScreen(
+                viewModel = arriendoViewModel,
+                arriendoId = entrada.arguments?.getInt("arriendoId") ?: 0,
+                rol = usuarioActual?.rol ?: RolUsuario.VECINO,
+                onVolver = { navController.popBackStack() }
+            )
+        }
 
 
         // Andy
