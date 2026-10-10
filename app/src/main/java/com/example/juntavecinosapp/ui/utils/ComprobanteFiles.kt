@@ -12,10 +12,6 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
 
-/**
- * Manejo de los archivos de comprobantes (fotos de cámara o galería).
- * Todo se guarda en filesDir/comprobantes, privado de esta app.
- */
 object ComprobanteFiles {
 
     private const val CARPETA = "comprobantes"
