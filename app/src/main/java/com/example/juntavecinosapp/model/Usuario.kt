@@ -3,7 +3,6 @@ package com.example.juntavecinosapp.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-/** Roles posibles de un usuario, según el caso (vecino, directiva/secretaría, tesorería). */
 object RolUsuario {
     const val VECINO = "VECINO"
     const val DIRECTIVA = "DIRECTIVA"

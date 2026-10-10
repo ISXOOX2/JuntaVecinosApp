@@ -4,10 +4,6 @@ import androidx.room.TypeConverter
 import java.time.LocalDate
 import java.time.LocalTime
 
-/**
- * Convierte fechas y horas a texto para guardarlas en Room, y las reconstruye al leerlas.
- * LocalDate se guarda como "2026-10-09" y LocalTime como "14:30".
- */
 class Converters {
 
     @TypeConverter

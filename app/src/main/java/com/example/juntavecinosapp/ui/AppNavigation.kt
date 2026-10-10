@@ -31,10 +31,6 @@ object Rutas {
     const val REPORTE = "reporte"
 }
 
-/**
- * Grafo de navegación de la app. Cada composable() es una pantalla.
- * Por ahora todas son provisorias; cada integrante reemplaza las suyas.
- */
 @Composable
 fun AppNavigation(
     navController: NavHostController = rememberNavController()
@@ -59,7 +55,6 @@ fun AppNavigation(
     }
 }
 
-/** Pantalla temporal que muestra solo el título. Se elimina cuando existan todas las reales. */
 @Composable
 private fun PantallaProvisoria(titulo: String) {
     Box(
