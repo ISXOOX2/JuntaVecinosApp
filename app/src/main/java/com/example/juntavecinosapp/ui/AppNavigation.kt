@@ -30,6 +30,12 @@ import com.example.juntavecinosapp.ui.screens.LoginScreen
 import com.example.juntavecinosapp.viewmodel.AuthViewModel
 import com.example.juntavecinosapp.viewmodel.AuthViewModelFactory
 import com.example.juntavecinosapp.ui.screens.HomeScreen
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.example.juntavecinosapp.data.repository.ArriendoRepository
+import com.example.juntavecinosapp.ui.screens.SolicitarArriendoScreen
+import com.example.juntavecinosapp.viewmodel.ArriendoViewModel
+import com.example.juntavecinosapp.viewmodel.ArriendoViewModelFactory
 
 // Nombres de las rutas de navegación de la app.
 //Se usan siempre desde aquí para no escribir textos sueltos en las pantallas.
@@ -71,6 +77,13 @@ fun AppNavigation(
         )
     )
 
+    val arriendoViewModel: ArriendoViewModel = viewModel(
+        factory = ArriendoViewModelFactory(
+            ArriendoRepository(AppDatabase.obtener(context).arriendoDao())
+        )
+    )
+    val usuarioActual by authViewModel.usuarioActual.collectAsState()
+
     NavHost(
         navController = navController,
         startDestination = Rutas.LOGIN
@@ -98,7 +111,13 @@ fun AppNavigation(
                 }
             )
         }
-        composable(Rutas.SOLICITAR_ARRIENDO) { PantallaProvisoria("Solicitar arriendo") }
+        composable(Rutas.SOLICITAR_ARRIENDO) {
+            SolicitarArriendoScreen(
+                viewModel = arriendoViewModel,
+                usuarioId = usuarioActual?.id ?: 0,
+                onVolver = { navController.popBackStack() }
+            )
+        }
         composable(Rutas.DISPONIBILIDAD) { PantallaProvisoria("Disponibilidad") }
         composable(Rutas.DETALLE_ARRIENDO) { PantallaProvisoria("Detalle de arriendo") }
 
