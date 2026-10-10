@@ -153,7 +153,6 @@ fun RegistroMovimientoContenido(
                         etiqueta = "Monto",
                         error = form.errorMonto,
                         iconoInicial = Icons.Filled.AttachMoney,
-                        prefijo = "$",
                         tipoTeclado = KeyboardType.Number
                     )
 

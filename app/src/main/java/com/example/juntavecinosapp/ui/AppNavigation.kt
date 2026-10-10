@@ -53,7 +53,7 @@ fun AppNavigation(
 
     NavHost(
         navController = navController,
-        startDestination = Rutas.LOGIN      // <- AQUÍ se cambia la pantalla de inicio (ver abajo)
+        startDestination = Rutas.REGISTRAR_PAGO      // <- AQUÍ se cambia la pantalla de inicio (ver abajo)
     ) {
         // Isa
         composable(Rutas.LOGIN) { PantallaProvisoria("Login / Registro") }
