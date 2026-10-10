@@ -102,6 +102,10 @@ class MovimientoViewModel(
         it.copy(uriComprobante = uri, errorComprobante = validarComprobante(it.tipo, uri))
     }
 
+    fun onComprobanteError(mensaje: String) = _form.update {
+        it.copy(errorComprobante = mensaje)
+    }
+
     fun guardar() {
         val actual = _form.value
         if (actual.guardando) return   // evita doble clic
