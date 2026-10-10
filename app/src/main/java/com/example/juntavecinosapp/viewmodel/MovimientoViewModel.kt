@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -165,6 +166,25 @@ class MovimientoViewModel(
     val balance: StateFlow<Long> = combine(totalEntradas, totalSalidas) { entradas, salidas ->
         entradas - salidas
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0L)
+
+    val totalPagos: StateFlow<Long> = repository.totalPorTipo(TipoMovimiento.PAGO)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0L)
+
+    val totalIngresos: StateFlow<Long> = repository.totalPorTipo(TipoMovimiento.INGRESO)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0L)
+
+    /** Qué parte de lo recaudado ya se gastó, de 0.0 a 1.0 (para la barra de progreso). */
+    val porcentajeGastado: StateFlow<Float> = combine(totalEntradas, totalSalidas) { entradas, salidas ->
+        when {
+            entradas <= 0L -> if (salidas > 0L) 1f else 0f
+            else -> (salidas.toFloat() / entradas.toFloat()).coerceIn(0f, 1f)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0f)
+
+    /** Los 5 gastos más recientes: lo que la comunidad quiere ver. */
+    val ultimosGastos: StateFlow<List<Movimiento>> = repository.movimientosPorTipo(TipoMovimiento.GASTO)
+        .map { lista -> lista.take(5) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun eliminar(movimiento: Movimiento) {
         viewModelScope.launch { repository.eliminar(movimiento) }
