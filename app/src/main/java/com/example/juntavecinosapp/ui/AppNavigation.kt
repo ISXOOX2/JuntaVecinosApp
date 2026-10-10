@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -18,9 +19,12 @@ import com.example.juntavecinosapp.data.repository.MovimientoRepository
 import com.example.juntavecinosapp.ui.screens.HistorialScreen
 import com.example.juntavecinosapp.ui.screens.RegistrarGastoScreen
 import com.example.juntavecinosapp.ui.screens.RegistrarPagoScreen
+import com.example.juntavecinosapp.ui.screens.ReporteScreen
 import com.example.juntavecinosapp.ui.screens.TransparenciaScreen
 import com.example.juntavecinosapp.viewmodel.MovimientoViewModel
 import com.example.juntavecinosapp.viewmodel.MovimientoViewModelFactory
+import com.example.juntavecinosapp.viewmodel.ReporteViewModel
+import com.example.juntavecinosapp.viewmodel.ReporteViewModelFactory
 
 // Nombres de las rutas de navegación de la app.
 //Se usan siempre desde aquí para no escribir textos sueltos en las pantallas.
@@ -47,10 +51,14 @@ fun AppNavigation(
 ) {
     // Un solo ViewModel de finanzas, compartido por todas las pantallas de Andy
     val context = LocalContext.current
+    val repositorioMovimientos = remember {
+        MovimientoRepository(AppDatabase.obtener(context).movimientoDao())
+    }
     val movimientoViewModel: MovimientoViewModel = viewModel(
-        factory = MovimientoViewModelFactory(
-            MovimientoRepository(AppDatabase.obtener(context).movimientoDao())
-        )
+        factory = MovimientoViewModelFactory(repositorioMovimientos)
+    )
+    val reporteViewModel: ReporteViewModel = viewModel(
+        factory = ReporteViewModelFactory(repositorioMovimientos)
     )
 
     NavHost(
@@ -89,7 +97,12 @@ fun AppNavigation(
                 onVolver = { navController.popBackStack() }
             )
         }
-        composable(Rutas.REPORTE) { PantallaProvisoria("Reporte") }
+        composable(Rutas.REPORTE) {
+            ReporteScreen(
+                viewModel = reporteViewModel,
+                onVolver = { navController.popBackStack() }
+            )
+        }
     }
 }
 
