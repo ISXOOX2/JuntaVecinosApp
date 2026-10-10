@@ -12,9 +12,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -27,7 +28,6 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.EventAvailable
 import androidx.compose.material.icons.filled.Paid
 import androidx.compose.material.icons.filled.PieChart
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -65,7 +65,7 @@ private data class OpcionMenu(
 )
 
 // Qué opciones ve cada rol. Así el menú se arma solo según quién entró.
-private fun opcionesPara(rol: RolUsuario): List<OpcionMenu> {
+private fun opcionesPara(rol: String): List<OpcionMenu> {
     val arriendos = listOf(
         OpcionMenu("Solicitar arriendo", "Reserva una dependencia", Icons.Filled.EventAvailable, Rutas.SOLICITAR_ARRIENDO),
         OpcionMenu("Disponibilidad", "Mira los arriendos y horarios", Icons.Filled.CalendarMonth, Rutas.DISPONIBILIDAD)
@@ -85,13 +85,14 @@ private fun opcionesPara(rol: RolUsuario): List<OpcionMenu> {
                 OpcionMenu("Historial", "Todos los movimientos", Icons.AutoMirrored.Filled.ReceiptLong, Rutas.HISTORIAL) +
                 OpcionMenu("Reporte", "Resumen por período", Icons.Filled.BarChart, Rutas.REPORTE)
         RolUsuario.TESORERIA -> tesoreria + transparencia + arriendos.last()
+        else -> arriendos + transparencia
     }
 }
 
-private fun nombreDeRol(rol: RolUsuario): String = when (rol) {
-    RolUsuario.VECINO -> "Vecino"
+private fun nombreDeRol(rol: String): String = when (rol) {
     RolUsuario.DIRECTIVA -> "Directiva"
     RolUsuario.TESORERIA -> "Tesorería"
+    else -> "Vecino"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -146,7 +147,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // El saludo ocupa todo el ancho de la grilla.
-            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Saludo(nombre = actual.nombre, rol = nombreDeRol(actual.rol))
             }
             items(opciones, key = { it.ruta }) { opcion ->
@@ -200,7 +201,7 @@ private fun TarjetaOpcion(opcion: OpcionMenu, onClick: () -> Unit) {
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(36.dp)
                 )
-                Spacer(Modifier.height(0.dp).padding(start = 16.dp))
+                Spacer(Modifier.width(16.dp))
                 Column {
                     Text(
                         text = opcion.titulo,
