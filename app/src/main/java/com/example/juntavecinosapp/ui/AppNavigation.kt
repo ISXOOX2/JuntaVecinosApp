@@ -18,6 +18,7 @@ import com.example.juntavecinosapp.data.repository.MovimientoRepository
 import com.example.juntavecinosapp.ui.screens.HistorialScreen
 import com.example.juntavecinosapp.ui.screens.RegistrarGastoScreen
 import com.example.juntavecinosapp.ui.screens.RegistrarPagoScreen
+import com.example.juntavecinosapp.ui.screens.TransparenciaScreen
 import com.example.juntavecinosapp.viewmodel.MovimientoViewModel
 import com.example.juntavecinosapp.viewmodel.MovimientoViewModelFactory
 
@@ -82,7 +83,12 @@ fun AppNavigation(
                 onVolver = { navController.popBackStack() }
             )
         }
-        composable(Rutas.TRANSPARENCIA) { PantallaProvisoria("Transparencia") }
+        composable(Rutas.TRANSPARENCIA) {
+            TransparenciaScreen(
+                viewModel = movimientoViewModel,
+                onVolver = { navController.popBackStack() }
+            )
+        }
         composable(Rutas.REPORTE) { PantallaProvisoria("Reporte") }
     }
 }
