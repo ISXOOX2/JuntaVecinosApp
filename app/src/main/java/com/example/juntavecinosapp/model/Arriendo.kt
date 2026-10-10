@@ -24,4 +24,5 @@ data class Arriendo(
     val motivo: String,
     val monto: Int,           // en pesos, ficticio
     val estado: String = EstadoArriendo.PENDIENTE
+    //
 )
