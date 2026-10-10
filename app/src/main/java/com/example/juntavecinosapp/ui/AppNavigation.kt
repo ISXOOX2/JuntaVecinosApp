@@ -29,6 +29,7 @@ import com.example.juntavecinosapp.data.repository.UsuarioRepository
 import com.example.juntavecinosapp.ui.screens.LoginScreen
 import com.example.juntavecinosapp.viewmodel.AuthViewModel
 import com.example.juntavecinosapp.viewmodel.AuthViewModelFactory
+import com.example.juntavecinosapp.ui.screens.HomeScreen
 
 // Nombres de las rutas de navegación de la app.
 //Se usan siempre desde aquí para no escribir textos sueltos en las pantallas.
@@ -86,10 +87,21 @@ fun AppNavigation(
                 }
             )
         }
-        composable(Rutas.HOME) { PantallaProvisoria("Home") }
+        composable(Rutas.HOME) {
+            HomeScreen(
+                viewModel = authViewModel,
+                onNavegar = { ruta -> navController.navigate(ruta) },
+                onCerrarSesion = {
+                    navController.navigate(Rutas.LOGIN) {
+                        popUpTo(Rutas.HOME) { inclusive = true }
+                    }
+                }
+            )
+        }
         composable(Rutas.SOLICITAR_ARRIENDO) { PantallaProvisoria("Solicitar arriendo") }
         composable(Rutas.DISPONIBILIDAD) { PantallaProvisoria("Disponibilidad") }
         composable(Rutas.DETALLE_ARRIENDO) { PantallaProvisoria("Detalle de arriendo") }
+
 
         // Andy
         composable(Rutas.REGISTRAR_PAGO) {
