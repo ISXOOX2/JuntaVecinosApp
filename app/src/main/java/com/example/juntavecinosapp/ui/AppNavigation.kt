@@ -5,20 +5,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext                       // NUEVO
-import androidx.lifecycle.viewmodel.compose.viewModel                  // NUEVO
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.juntavecinosapp.data.local.AppDatabase              // NUEVO
-import com.example.juntavecinosapp.data.repository.MovimientoRepository // NUEVO
-import com.example.juntavecinosapp.ui.screens.RegistrarGastoScreen     // NUEVO
-import com.example.juntavecinosapp.ui.screens.RegistrarPagoScreen      // NUEVO
-import com.example.juntavecinosapp.viewmodel.MovimientoViewModel       // NUEVO
-import com.example.juntavecinosapp.viewmodel.MovimientoViewModelFactory // NUEVO
+import com.example.juntavecinosapp.data.local.AppDatabase
+import com.example.juntavecinosapp.data.repository.MovimientoRepository
+import com.example.juntavecinosapp.ui.screens.HistorialScreen
+import com.example.juntavecinosapp.ui.screens.RegistrarGastoScreen
+import com.example.juntavecinosapp.ui.screens.RegistrarPagoScreen
+import com.example.juntavecinosapp.ui.screens.ReporteScreen
+import com.example.juntavecinosapp.ui.screens.TransparenciaScreen
+import com.example.juntavecinosapp.viewmodel.MovimientoViewModel
+import com.example.juntavecinosapp.viewmodel.MovimientoViewModelFactory
+import com.example.juntavecinosapp.viewmodel.ReporteViewModel
+import com.example.juntavecinosapp.viewmodel.ReporteViewModelFactory
 
 // Nombres de las rutas de navegación de la app.
 //Se usan siempre desde aquí para no escribir textos sueltos en las pantallas.
@@ -43,17 +49,21 @@ object Rutas {
 fun AppNavigation(
     navController: NavHostController = rememberNavController()
 ) {
-    // NUEVO: un solo ViewModel de finanzas, compartido por todas las pantallas de Andy
+    // Un solo ViewModel de finanzas, compartido por todas las pantallas de Andy
     val context = LocalContext.current
+    val repositorioMovimientos = remember {
+        MovimientoRepository(AppDatabase.obtener(context).movimientoDao())
+    }
     val movimientoViewModel: MovimientoViewModel = viewModel(
-        factory = MovimientoViewModelFactory(
-            MovimientoRepository(AppDatabase.obtener(context).movimientoDao())
-        )
+        factory = MovimientoViewModelFactory(repositorioMovimientos)
+    )
+    val reporteViewModel: ReporteViewModel = viewModel(
+        factory = ReporteViewModelFactory(repositorioMovimientos)
     )
 
     NavHost(
         navController = navController,
-        startDestination = Rutas.LOGIN      // <- AQUÍ se cambia la pantalla de inicio (ver abajo)
+        startDestination = Rutas.LOGIN
     ) {
         // Isa
         composable(Rutas.LOGIN) { PantallaProvisoria("Login / Registro") }
@@ -63,21 +73,36 @@ fun AppNavigation(
         composable(Rutas.DETALLE_ARRIENDO) { PantallaProvisoria("Detalle de arriendo") }
 
         // Andy
-        composable(Rutas.REGISTRAR_PAGO) {                                  // NUEVO
+        composable(Rutas.REGISTRAR_PAGO) {
             RegistrarPagoScreen(
                 viewModel = movimientoViewModel,
                 onVolver = { navController.popBackStack() }
             )
         }
-        composable(Rutas.REGISTRAR_GASTO) {                                 // NUEVO
+        composable(Rutas.REGISTRAR_GASTO) {
             RegistrarGastoScreen(
                 viewModel = movimientoViewModel,
                 onVolver = { navController.popBackStack() }
             )
         }
-        composable(Rutas.HISTORIAL) { PantallaProvisoria("Historial de movimientos") }
-        composable(Rutas.TRANSPARENCIA) { PantallaProvisoria("Transparencia") }
-        composable(Rutas.REPORTE) { PantallaProvisoria("Reporte") }
+        composable(Rutas.HISTORIAL) {
+            HistorialScreen(
+                viewModel = movimientoViewModel,
+                onVolver = { navController.popBackStack() }
+            )
+        }
+        composable(Rutas.TRANSPARENCIA) {
+            TransparenciaScreen(
+                viewModel = movimientoViewModel,
+                onVolver = { navController.popBackStack() }
+            )
+        }
+        composable(Rutas.REPORTE) {
+            ReporteScreen(
+                viewModel = reporteViewModel,
+                onVolver = { navController.popBackStack() }
+            )
+        }
     }
 }
 

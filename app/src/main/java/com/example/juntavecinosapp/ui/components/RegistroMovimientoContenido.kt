@@ -67,15 +67,13 @@ fun RegistroMovimientoContenido(
         }
     }
 
-    // Reacciona a los eventos del ViewModel: vibración, mensajes y volver.
+// Reacciona a los eventos del ViewModel: vibración, mensajes y volver.
     LaunchedEffect(Unit) {
         viewModel.eventos.collect { evento ->
             when (evento) {
                 EventoFormulario.Guardado -> {
                     Vibracion.exito(context)
                     exito = true
-                    delay(1200)
-                    onVolver()
                 }
                 EventoFormulario.Invalido -> Vibracion.error(context)
                 is EventoFormulario.Error -> {
@@ -153,7 +151,6 @@ fun RegistroMovimientoContenido(
                         etiqueta = "Monto",
                         error = form.errorMonto,
                         iconoInicial = Icons.Filled.AttachMoney,
-                        prefijo = "$",
                         tipoTeclado = KeyboardType.Number
                     )
 
@@ -236,7 +233,7 @@ fun RegistroMovimientoContenido(
                 }
             }
 
-            // Confirmación animada al guardar
+            // Confirmación animada al guardar: se queda hasta que la persona elija
             AnimatedVisibility(
                 visible = exito,
                 enter = fadeIn() + scaleIn(initialScale = 0.8f),
@@ -245,7 +242,7 @@ fun RegistroMovimientoContenido(
             ) {
                 Surface(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)) {
                     Column(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize().padding(24.dp),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -257,6 +254,16 @@ fun RegistroMovimientoContenido(
                         )
                         Spacer(Modifier.height(12.dp))
                         Text("Movimiento guardado", style = MaterialTheme.typography.headlineSmall)
+                        Spacer(Modifier.height(24.dp))
+                        Button(
+                            onClick = { exito = false },
+                            modifier = Modifier.widthIn(max = 400.dp).fillMaxWidth()
+                        ) { Text("Registrar otro") }
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = onVolver,
+                            modifier = Modifier.widthIn(max = 400.dp).fillMaxWidth()
+                        ) { Text("Volver") }
                     }
                 }
             }
