@@ -1,5 +1,10 @@
 package com.example.juntavecinosapp.ui.screens
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.example.juntavecinosapp.ui.utils.Notificaciones
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -60,6 +65,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.example.juntavecinosapp.model.Dependencias
+
 import com.example.juntavecinosapp.ui.components.CampoValidado
 import com.example.juntavecinosapp.ui.utils.Vibracion
 import com.example.juntavecinosapp.ui.utils.formatearPesos
@@ -84,12 +90,21 @@ fun SolicitarArriendoScreen(
     val form by viewModel.form.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-
     var mostrarFecha by rememberSaveable { mutableStateOf(false) }
     var mostrarHoraInicio by rememberSaveable { mutableStateOf(false) }
     var mostrarHoraFin by rememberSaveable { mutableStateOf(false) }
     var mostrarConfirmacion by rememberSaveable { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) { viewModel.iniciarFormulario() }
+    // Pide el permiso de notificaciones al entrar a la pantalla.
+    val permisoNotificaciones = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permisoNotificaciones.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
     // Al entrar siempre partimos con el formulario limpio.
     LaunchedEffect(Unit) { viewModel.iniciarFormulario() }
 
@@ -99,6 +114,7 @@ fun SolicitarArriendoScreen(
             when (evento) {
                 EventoFormulario.Guardado -> {
                     Vibracion.exito(context)
+                    Notificaciones.solicitudEnviada(context)
                     mostrarConfirmacion = true
                 }
                 EventoFormulario.Invalido -> Vibracion.error(context)
