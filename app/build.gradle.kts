@@ -62,4 +62,8 @@ dependencies {
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.room.ktx)
             ksp(libs.androidx.room.compiler)
+    // Retrofit + Gson + corrutinas (igual que la AppEjemplo del profe)
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
 }
