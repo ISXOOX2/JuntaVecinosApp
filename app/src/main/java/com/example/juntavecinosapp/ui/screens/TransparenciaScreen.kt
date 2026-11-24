@@ -30,6 +30,7 @@ import com.example.juntavecinosapp.model.Movimiento
 import com.example.juntavecinosapp.ui.utils.formatearFecha
 import com.example.juntavecinosapp.ui.utils.formatearPesos
 import com.example.juntavecinosapp.viewmodel.MovimientoViewModel
+import java.util.Locale
 
 private val VerdeEntrada = Color(0xFF2E7D32)
 
@@ -49,6 +50,9 @@ fun TransparenciaScreen(
     val ingresos by viewModel.totalIngresos.collectAsStateWithLifecycle()
     val porcentaje by viewModel.porcentajeGastado.collectAsStateWithLifecycle()
     val ultimosGastos by viewModel.ultimosGastos.collectAsStateWithLifecycle()
+    val uf by viewModel.uf.collectAsStateWithLifecycle()
+    val dolar by viewModel.dolar.collectAsStateWithLifecycle()
+    val errorIndicadores by viewModel.errorIndicadores.collectAsStateWithLifecycle()
 
     val porcentajeAnimado by animateFloatAsState(
         targetValue = porcentaje,
@@ -107,6 +111,30 @@ fun TransparenciaScreen(
                                 style = MaterialTheme.typography.headlineLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
+                        }
+                    }
+
+                    // ---------- UF y dólar (mindicador.cl) ----------
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("Indicadores del día", style = MaterialTheme.typography.titleMedium)
+                            when {
+                                errorIndicadores != null -> Text(
+                                    errorIndicadores.orEmpty(),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                uf == null || dolar == null -> Text(
+                                    "Cargando indicadores...",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                else -> {
+                                    FilaIndicador("UF", uf ?: 0.0)
+                                    HorizontalDivider()
+                                    FilaIndicador("Dólar", dolar ?: 0.0)
+                                }
+                            }
                         }
                     }
 
@@ -284,6 +312,21 @@ private fun FilaGasto(gasto: Movimiento) {
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.error
+        )
+    }
+}
+
+@Composable
+private fun FilaIndicador(nombre: String, valor: Double) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(nombre, style = MaterialTheme.typography.bodyMedium)
+        Text(
+            "$" + String.format(Locale.forLanguageTag("es-CL"), "%,.2f", valor),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold
         )
     }
 }

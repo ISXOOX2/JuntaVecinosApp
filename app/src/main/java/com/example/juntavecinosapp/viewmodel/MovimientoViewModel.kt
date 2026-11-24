@@ -3,9 +3,11 @@ package com.example.juntavecinosapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.juntavecinosapp.data.repository.IndicadoresRepository
 import com.example.juntavecinosapp.data.repository.MovimientoRepository
 import com.example.juntavecinosapp.model.Movimiento
 import com.example.juntavecinosapp.model.TipoMovimiento
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -134,9 +136,12 @@ class MovimientoViewModel(
                 )
                 _form.value = MovimientoFormState(tipo = validado.tipo)
                 _eventos.send(EventoFormulario.Guardado)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
+                // si ms-finanzas responde 400 se muestra su mensaje
                 _form.update { it.copy(guardando = false) }
-                _eventos.send(EventoFormulario.Error("No se pudo guardar el movimiento. Intenta nuevamente."))
+                _eventos.send(EventoFormulario.Error(e.message ?: "No se pudo guardar el movimiento. Intenta nuevamente."))
             }
         }
     }
@@ -187,7 +192,61 @@ class MovimientoViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun eliminar(movimiento: Movimiento) {
-        viewModelScope.launch { repository.eliminar(movimiento) }
+        viewModelScope.launch {
+            try {
+                repository.eliminar(movimiento)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _eventos.send(EventoFormulario.Error(e.message ?: "No se pudo eliminar el movimiento"))
+            }
+        }
+    }
+
+    /** Sincroniza: trae los movimientos de ms-finanzas y los guarda en Room. */
+    fun listar() {
+        viewModelScope.launch {
+            try {
+                repository.listar()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                println("Error al obtener movimientos: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    // ======================= INDICADORES (mindicador.cl) =======================
+
+    private val indicadoresRepository = IndicadoresRepository()
+
+    private val _uf = MutableStateFlow<Double?>(null)
+    val uf: StateFlow<Double?> = _uf
+
+    private val _dolar = MutableStateFlow<Double?>(null)
+    val dolar: StateFlow<Double?> = _dolar
+
+    private val _errorIndicadores = MutableStateFlow<String?>(null)
+    val errorIndicadores: StateFlow<String?> = _errorIndicadores
+
+    init {
+        cargarIndicadores()
+    }
+
+    private fun cargarIndicadores() {
+        viewModelScope.launch {
+            try {
+                val indicadores = indicadoresRepository.obtenerIndicadores()
+                _uf.value = indicadores.uf.valor
+                _dolar.value = indicadores.dolar.valor
+                _errorIndicadores.value = null
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _errorIndicadores.value = "No se pudieron cargar los indicadores"
+                println("Error al obtener indicadores: ${e.localizedMessage}")
+            }
+        }
     }
 
 

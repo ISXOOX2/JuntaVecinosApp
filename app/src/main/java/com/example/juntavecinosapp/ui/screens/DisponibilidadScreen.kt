@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +55,9 @@ fun DisponibilidadScreen(
     val todos by viewModel.todos.collectAsState()
     var filtro by rememberSaveable { mutableStateOf(FILTRO_TODOS) }
     val tipoPantalla = tipoPantallaActual()
+
+    // Al abrir: trae todas las reservas del servidor y las guarda en Room
+    LaunchedEffect(Unit) { viewModel.listar() }
 
     val columnas = when (tipoPantalla) {
         TipoPantalla.COMPACTA -> 1

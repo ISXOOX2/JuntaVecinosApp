@@ -151,8 +151,9 @@ class ArriendoViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                // si ms-reservas responde 400 (ej: choque de horario) se muestra su mensaje
                 _form.update { it.copy(cargando = false) }
-                _eventos.send(EventoFormulario.Error("No se pudo guardar la solicitud. Intenta de nuevo."))
+                _eventos.send(EventoFormulario.Error(e.message ?: "No se pudo guardar la solicitud. Intenta de nuevo."))
             }
         }
     }
@@ -172,6 +173,19 @@ class ArriendoViewModel(
 
     fun cargarDetalle(id: Int) {
         viewModelScope.launch { _detalle.value = repository.buscarPorId(id) }
+    }
+
+    /** Sincroniza: trae las reservas de ms-reservas y las guarda en Room. */
+    fun listar(usuarioId: Int? = null) {
+        viewModelScope.launch {
+            try {
+                repository.listar(usuarioId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                println("Error al obtener reservas: ${e.localizedMessage}")
+            }
+        }
     }
 
     // ======================= APROBAR / RECHAZAR =======================
@@ -204,7 +218,28 @@ class ArriendoViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _eventos.send(EventoFormulario.Error("No se pudo actualizar la solicitud"))
+                _eventos.send(EventoFormulario.Error(e.message ?: "No se pudo actualizar la solicitud"))
+            }
+        }
+    }
+
+    // ======================= ELIMINAR =======================
+
+    /** Solo la directiva puede eliminar un arriendo. */
+    fun eliminar(id: Int, rolUsuario: String, onEliminado: () -> Unit) {
+        if (rolUsuario != RolUsuario.DIRECTIVA) {
+            _eventos.trySend(EventoFormulario.Error("Solo la directiva puede eliminar"))
+            return
+        }
+        viewModelScope.launch {
+            try {
+                repository.eliminar(id)
+                _detalle.value = null
+                onEliminado()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _eventos.send(EventoFormulario.Error(e.message ?: "No se pudo eliminar el arriendo"))
             }
         }
     }
