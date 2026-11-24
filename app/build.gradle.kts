@@ -20,8 +20,19 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Firma del APK release con la llave juntavecinos.jks (raíz del proyecto)
+    signingConfigs {
+        create("release") {
+            storeFile = file("../juntavecinos.jks")
+            storePassword = "CAMBIAR_CLAVE"
+            keyAlias = "juntavecinos"
+            keyPassword = "CAMBIAR_CLAVE"
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
