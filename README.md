@@ -52,37 +52,115 @@ Las reglas están en los **ViewModels**, separadas de la interfaz. Los campos mu
 3. **Compartir** (Intent del sistema), para enviar el resumen del reporte.
 
 ## Tecnologías
+
+**App móvil**
 - Kotlin y Jetpack Compose con Material 3
 - Arquitectura **MVVM** (Model, ViewModel, Repository) con `StateFlow`
-- **Room** (SQLite) para la persistencia local
+- **Retrofit** + Gson y corrutinas para consumir los microservicios y la API externa
+- **Room** (SQLite) como respaldo local cuando no hay conexión con el servidor
 - Navigation Compose
 - Diseño adaptable a pantallas compactas, medianas y expandidas
 - Requisitos: Android 8.0 (API 26) o superior
 
-## Estructura
+**Backend** (carpeta `backend/`)
+- 3 microservicios en **Spring Boot** (Java 21) con Lombok
+- **MySQL** (XAMPP), una base de datos por microservicio
+- Estructura Controller → Service → Repository, DTOs y manejo de errores con `GlobalExceptionHandler`
 
-Dentro de `app/src/main/java/com/example/juntavecinosapp/`:
+## Arquitectura
+
+```
+App Android (Retrofit)
+ ├── ms-admin     → localhost:9091 → bd_admin     (usuarios y roles)
+ ├── ms-reservas  → localhost:9092 → bd_reservas  (dependencias y reservas)
+ ├── ms-finanzas  → localhost:9093 → bd_finanzas  (pagos y gastos)
+ └── mindicador.cl (API externa: UF y dólar del día)
+```
+
+Desde el emulador, la app llega al computador con la dirección `10.0.2.2`. Si el servidor no responde, la app muestra los datos guardados en Room.
+
+## Estructura
 
 | Carpeta | Contenido |
 |---|---|
-| `model/` | Entidades y modelos: Usuario, Arriendo, Movimiento, Dependencia |
-| `data/local/` | Base de datos Room, DAOs y conversores |
-| `data/repository/` | Repositorios sobre los DAOs |
-| `viewmodel/` | Lógica de cada pantalla y validaciones |
-| `ui/screens/` | Pantallas |
-| `ui/components/` | Componentes reutilizables |
-| `ui/theme/`, `ui/utils/` | Tema, formatos, vibración y tamaño de pantalla |
-| `ui/AppNavigation.kt` | Rutas de navegación |
+| `app/.../model/` | Entidades y modelos: Usuario, Arriendo, Movimiento, Dependencia |
+| `app/.../data/local/` | Base de datos Room, DAOs y conversores |
+| `app/.../data/remote/` | `RetrofitInstance` y los `ApiService` de cada microservicio y de mindicador |
+| `app/.../data/repository/` | Repositorios: primero el microservicio y Room como respaldo |
+| `app/.../viewmodel/` | Lógica de cada pantalla y validaciones |
+| `app/.../ui/screens/` | Pantallas |
+| `app/.../ui/components/` | Componentes reutilizables |
+| `backend/ms-admin/` | Microservicio de usuarios, login y registro |
+| `backend/ms-reservas/` | Microservicio de dependencias y reservas (revisa choques de horario) |
+| `backend/ms-finanzas/` | Microservicio de movimientos y resumen financiero |
+
+`app/...` corresponde a `app/src/main/java/com/example/juntavecinosapp/`.
+
+## Endpoints utilizados
+
+### Microservicios propios
+
+**ms-admin** (`http://localhost:9091`)
+
+| Método | Endpoint | Uso |
+|---|---|---|
+| POST | `/auth/register` | Crear cuenta (siempre como Vecino) |
+| POST | `/auth/login` | Iniciar sesión |
+| GET | `/usuarios` | Listar usuarios |
+| GET | `/usuarios/{id}` | Ver un usuario |
+| PUT | `/usuarios/{id}` | Actualizar un usuario |
+| DELETE | `/usuarios/{id}` | Eliminar un usuario |
+
+**ms-reservas** (`http://localhost:9092`)
+
+| Método | Endpoint | Uso |
+|---|---|---|
+| GET | `/dependencias` | Listar dependencias y tarifas |
+| GET | `/reservas` | Listar reservas |
+| GET | `/reservas/{id}` | Ver una reserva |
+| POST | `/reservas` | Solicitar arriendo (calcula el monto y rechaza horarios ocupados con error 400) |
+| PUT | `/reservas/{id}` | Actualizar una reserva |
+| PATCH | `/reservas/{id}/estado` | Aprobar o rechazar (directiva) |
+| DELETE | `/reservas/{id}` | Eliminar un arriendo (directiva) |
+| GET | `/reservas/{id}/historial` | Historial de cambios de estado |
+
+**ms-finanzas** (`http://localhost:9093`)
+
+| Método | Endpoint | Uso |
+|---|---|---|
+| GET | `/movimientos` | Listar pagos y gastos |
+| GET | `/movimientos/resumen` | Totales de entradas, salidas y saldo |
+| GET | `/movimientos/{id}` | Ver un movimiento |
+| POST | `/movimientos` | Registrar pago o gasto (tesorería) |
+| PUT | `/movimientos/{id}` | Actualizar un movimiento |
+| DELETE | `/movimientos/{id}` | Eliminar un movimiento |
+
+### API externa
+
+| Método | Endpoint | Uso |
+|---|---|---|
+| GET | `https://mindicador.cl/api` | Valor de la **UF** y del **dólar** del día, mostrados en la pantalla Transparencia |
 
 ## Cómo ejecutar
 
-1. Clona el repositorio: `https://github.com/ISXOOX2/JuntaVecinosApp`
-2. Ábrelo con **Android Studio** y confía en el proyecto si lo pregunta.
-3. Espera a que termine el **Gradle Sync**.
-4. Elige un emulador (o un celular con depuración USB) con Android 8.0 o superior.
-5. Presiona **Run**.
+### 1. Base de datos
+1. Abre **XAMPP** y presiona **Start** en **MySQL** (puerto 3306, usuario `root`, sin clave).
+2. No hace falta crear las bases: cada microservicio crea la suya (`bd_admin`, `bd_reservas`, `bd_finanzas`) al iniciar.
 
-Si ya habías instalado una versión anterior de la app, **desinstálala o limpia sus datos** (Device Manager → Wipe Data) para que se creen los usuarios de prueba.
+### 2. Backend
+1. Abre la carpeta `backend/` en **IntelliJ IDEA** (o cada microservicio por separado).
+2. Ejecuta, en este orden, `MsAdminApplication`, `MsReservasApplication` y `MsFinanzasApplication`.
+3. Para comprobar que están arriba, abre en el navegador:
+   - `http://localhost:9091/usuarios`
+   - `http://localhost:9092/dependencias`
+   - `http://localhost:9093/movimientos`
+
+Al iniciar, ms-admin crea los usuarios de prueba y ms-reservas las 3 dependencias.
+
+### 3. App
+1. Abre la carpeta del proyecto con **Android Studio** y espera el **Gradle Sync**.
+2. Elige un emulador con Android 8.0 o superior.
+3. Presiona **Run**. Los microservicios deben estar corriendo para trabajar en línea.
 
 ## Usuarios de prueba
 
@@ -111,10 +189,23 @@ También puedes crear más vecinos con **Crear cuenta**.
 3. Entra como **tesorería** y registra un pago con foto de comprobante.
 4. Revisa *Transparencia* y *Reporte*.
 
+## APK firmado
+
+- APK: `app/release/app-release.apk`
+- Llave: `juntavecinos.jks` (en la raíz del proyecto), alias `juntavecinos`
+- La configuración de firma está en `app/build.gradle.kts` (`signingConfigs` → `release`).
+
+Para generarlo de nuevo: **Build → Generate Signed App Bundle or APK → APK**, elegir `juntavecinos.jks` y la variante **release**.
+
+![APK firmado](capturas/apk-firmado.png)
+
+![Llave .jks](capturas/jks.png)
+
 ## Organización del equipo
-- Ramas: `main` (versión de entrega), `isa` y `Andy` (trabajo de cada integrante).
+- Ramas: `main` (versión de entrega), `integracion-api` (conexión con los microservicios), `isa` y `Andy` (trabajo de cada integrante).
 - Planificación en Trello: [Tablero Junta Vecinos App](https://trello.com/invite/b/6acadb02afb1f21bc08ceb2f/ATTI12efb442b61da3ec6a8ff5d8e5e83de56DF8F2F9/junta-vecinos-app)
 
 ## Limitaciones conocidas
-- Las claves se guardan sin cifrar y la sesión no se mantiene al cerrar la app.
+- La sesión no se mantiene al cerrar la app.
+- El backend corre en el computador (localhost); para usarlo desde un celular físico habría que cambiar la dirección `10.0.2.2` por la IP del computador.
 - No hay pagos reales ni integración bancaria, tal como indica el caso.
