@@ -110,8 +110,11 @@ class AuthViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _login.update { it.copy(cargando = false) }
-                _eventos.send(EventoFormulario.Error("No se pudo iniciar sesión. Intenta de nuevo."))
+                // muestra el "message" del 400 de ms-admin
+                _login.update {
+                    it.copy(cargando = false, errorGeneral = e.message ?: "No se pudo iniciar sesión. Intenta de nuevo.")
+                }
+                _eventos.send(EventoFormulario.Invalido)
             }
         }
     }
@@ -176,6 +179,7 @@ class AuthViewModel(
                     clave = actual.clave,
                     rol = RolUsuario.VECINO   // quien se registra siempre es vecino
                 )
+                // con red, el id es el que asignó ms-admin
                 val id = repository.registrar(nuevo)
 
                 _usuarioActual.value = nuevo.copy(id = id.toInt())
@@ -185,7 +189,7 @@ class AuthViewModel(
                 throw e
             } catch (e: Exception) {
                 _registro.update { it.copy(cargando = false) }
-                _eventos.send(EventoFormulario.Error("No se pudo crear la cuenta. Intenta de nuevo."))
+                _eventos.send(EventoFormulario.Error(e.message ?: "No se pudo crear la cuenta. Intenta de nuevo."))
             }
         }
     }

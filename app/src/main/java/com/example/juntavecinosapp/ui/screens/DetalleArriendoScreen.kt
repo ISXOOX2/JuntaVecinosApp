@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Paid
 import androidx.compose.material3.AlertDialog
@@ -87,6 +88,8 @@ fun DetalleArriendoScreen(
 
     // Estado que se quiere aplicar; mientras no sea null se muestra el diálogo de confirmación.
     var estadoPorConfirmar by rememberSaveable { mutableStateOf<String?>(null) }
+    // true = se muestra el diálogo para eliminar
+    var confirmarEliminar by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(arriendoId) { viewModel.cargarDetalle(arriendoId) }
 
@@ -214,6 +217,21 @@ fun DetalleArriendoScreen(
                             }
                         }
                     }
+
+                    // Eliminar: solo la directiva
+                    if (rol == RolUsuario.DIRECTIVA) {
+                        OutlinedButton(
+                            onClick = { confirmarEliminar = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.size(8.dp))
+                            Text("Eliminar")
+                        }
+                    }
                 }
             }
         }
@@ -238,6 +256,23 @@ fun DetalleArriendoScreen(
             },
             dismissButton = {
                 TextButton(onClick = { estadoPorConfirmar = null }) { Text("Cancelar") }
+            }
+        )
+    }
+
+    if (confirmarEliminar) {
+        AlertDialog(
+            onDismissRequest = { confirmarEliminar = false },
+            title = { Text("¿Eliminar arriendo?") },
+            text = { Text("Se borrará la solicitud. Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmarEliminar = false
+                    viewModel.eliminar(arriendoId, rol, onEliminado = onVolver)
+                }) { Text("Eliminar", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmarEliminar = false }) { Text("Cancelar") }
             }
         )
     }

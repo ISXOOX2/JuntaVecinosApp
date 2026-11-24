@@ -2,6 +2,7 @@ package com.example.juntavecinosapp.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.juntavecinosapp.model.Arriendo
@@ -13,7 +14,8 @@ import java.time.LocalTime
 @Dao
 interface ArriendoDao {
 
-    @Insert
+    // REPLACE: si llega del servidor con un id que ya existe, lo reemplaza
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(arriendo: Arriendo): Long
 
     @Update
@@ -29,6 +31,9 @@ interface ArriendoDao {
 
     @Query("SELECT * FROM arriendos WHERE id = :id LIMIT 1")
     suspend fun buscarPorId(id: Int): Arriendo?
+
+    @Query("DELETE FROM arriendos WHERE id = :id")
+    suspend fun eliminarPorId(id: Int)
 
     /** Aprobar o rechazar una solicitud (lo hace la directiva). */
     @Query("UPDATE arriendos SET estado = :estado WHERE id = :id")

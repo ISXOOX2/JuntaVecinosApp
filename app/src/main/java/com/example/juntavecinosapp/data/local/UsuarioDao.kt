@@ -2,6 +2,7 @@ package com.example.juntavecinosapp.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.juntavecinosapp.model.Usuario
 
@@ -10,7 +11,8 @@ import com.example.juntavecinosapp.model.Usuario
 interface UsuarioDao {
 
     /** Guarda un usuario nuevo y devuelve el id que le asignó Room. */
-    @Insert
+    // REPLACE: guarda o actualiza el usuario que llega del servidor
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(usuario: Usuario): Long
 
     /** Devuelve el usuario si el correo y la clave coinciden, o null si no. */

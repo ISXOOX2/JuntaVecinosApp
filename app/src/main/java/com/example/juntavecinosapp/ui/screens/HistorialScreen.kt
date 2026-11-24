@@ -31,10 +31,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +51,7 @@ import com.example.juntavecinosapp.model.Movimiento
 import com.example.juntavecinosapp.model.TipoMovimiento
 import com.example.juntavecinosapp.ui.components.TarjetaMovimiento
 import com.example.juntavecinosapp.ui.utils.ComprobanteFiles
+import com.example.juntavecinosapp.viewmodel.EventoFormulario
 import com.example.juntavecinosapp.viewmodel.MovimientoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,6 +66,17 @@ fun HistorialScreen(
 
     // Solo estado visual: cuál tarjeta espera confirmación para eliminarse.
     var porEliminar by remember { mutableStateOf<Movimiento?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Al abrir: trae los movimientos del servidor y los guarda en Room
+    LaunchedEffect(Unit) { viewModel.listar() }
+
+    // Muestra el error si no se pudo eliminar en el servidor
+    LaunchedEffect(Unit) {
+        viewModel.eventos.collect { evento ->
+            if (evento is EventoFormulario.Error) snackbarHostState.showSnackbar(evento.mensaje)
+        }
+    }
 
     val opciones = listOf(
         null to "Todos",
@@ -82,7 +97,8 @@ fun HistorialScreen(
                 },
                 windowInsets = WindowInsets(0)
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
 
